@@ -4,10 +4,10 @@ import { auth, db } from "../firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
 
 function MyApplications() {
-  const [apps, setApps] = useState([]);
+  // const [apps, setApps] = useState([]);
   const [filter, setFilter] = useState("all");
-  const [applications, setApplications] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // const [applications, setApplications] = useState([]);
+  // const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchApplications = async () => {
@@ -108,28 +108,28 @@ function FilterBtn({ text, active, onClick }) {
   );
 }
 
-function Status({ status }) {
-  const colors = {
-    applied: "#3b82f6",
-    interview: "#f59e0b",
-    offer: "#10b981",
-    rejected: "#ef4444",
-  };
+// function Status({ status }) {
+//   const colors = {
+//     applied: "#3b82f6",
+//     interview: "#f59e0b",
+//     offer: "#10b981",
+//     rejected: "#ef4444",
+//   };
 
-  return (
-    <span
-      style={{
-        background: colors[status] || "#ccc",
-        color: "white",
-        padding: "4px 10px",
-        borderRadius: "20px",
-        fontSize: "12px",
-      }}
-    >
-      {status}
-    </span>
-  );
-}
+//   return (
+//     <span
+//       style={{
+//         background: colors[status] || "#ccc",
+//         color: "white",
+//         padding: "4px 10px",
+//         borderRadius: "20px",
+//         fontSize: "12px",
+//       }}
+//     >
+//       {status}
+//     </span>
+//   );
+// }
 
 /* STYLES */
 
@@ -149,17 +149,17 @@ const grid = {
   gap: "15px",
 };
 
-const card = {
-  background: "#fff",
-  padding: "16px",
-  borderRadius: "10px",
-  border: "1px solid #eee",
-  boxShadow: "0 4px 10px rgba(0,0,0,0.04)",
-};
+// const card = {
+//   background: "#fff",
+//   padding: "16px",
+//   borderRadius: "10px",
+//   border: "1px solid #eee",
+//   boxShadow: "0 4px 10px rgba(0,0,0,0.04)",
+// };
 
-const muted = {
-  color: "#6b7280",
-};
+// const muted = {
+//   color: "#6b7280",
+// };
 
 const cardStyle = {
   background: "#fff",
