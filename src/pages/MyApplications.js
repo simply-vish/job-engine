@@ -4,10 +4,10 @@ import { auth, db } from "../firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
 
 function MyApplications() {
-  // const [apps, setApps] = useState([]);
+  const [apps] = useState([]);
   const [filter, setFilter] = useState("all");
-  // const [applications, setApplications] = useState([]);
-  // const [loading, setLoading] = useState(true);
+  const [setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchApplications = async () => {
