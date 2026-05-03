@@ -14,7 +14,7 @@ A student job portal with preparation tools and interview support.
 - Firebase (Auth + Firestore)
 
 ## Live Demo
-
+https://job-engine-xi.vercel.app/
 
 ## Setup
 ```bash

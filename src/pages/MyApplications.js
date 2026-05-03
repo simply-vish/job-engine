@@ -1,25 +1,36 @@
 import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
-import { db } from "../firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { auth, db } from "../firebase";
+import { collection, query, where, getDocs } from "firebase/firestore";
 
 function MyApplications() {
   const [apps, setApps] = useState([]);
   const [filter, setFilter] = useState("all");
+  const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchApps = async () => {
-      const snapshot = await getDocs(collection(db, "applications"));
+    const fetchApplications = async () => {
+      const user = auth.currentUser;
+      if (!user) return;
 
-      const arr = [];
-      snapshot.forEach((doc) => {
-        arr.push(doc.data());
-      });
+      const q = query(
+        collection(db, "applications"),
+        where("userId", "==", user.uid),
+      );
 
-      setApps(arr);
+      const snapshot = await getDocs(q);
+
+      const apps = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      setApplications(apps);
+      setLoading(false);
     };
 
-    fetchApps();
+    fetchApplications();
   }, []);
 
   const filteredApps =
@@ -54,18 +65,24 @@ function MyApplications() {
 
       {/* GRID */}
       <div style={grid}>
-        {filteredApps.length === 0 && <p>No applications found</p>}
+        {loading ? (
+          <p>Loading...</p>
+        ) : filteredApps.length === 0 ? (
+          <p style={{ color: "#6b7280", marginTop: "20px" }}>
+            No applications found 🚀
+          </p>
+        ) : (
+          filteredApps.map((app) => (
+            <div key={app.id} style={cardStyle}>
+              <div>
+                <h3>{app.jobTitle}</h3>
+                <p>{app.company}</p>
+              </div>
 
-        {filteredApps.map((app, i) => (
-          <div key={i} style={card}>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <h3>{app.jobTitle || app.title}</h3>
-              <Status status={app.status} />
+              <span style={badgeStyle}>{app.status}</span>
             </div>
-
-            <p style={muted}>{app.companyName || app.company}</p>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </Layout>
   );
@@ -142,6 +159,27 @@ const card = {
 
 const muted = {
   color: "#6b7280",
+};
+
+const cardStyle = {
+  background: "#fff",
+  padding: "16px",
+  borderRadius: "12px",
+  boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+  marginBottom: "12px",
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+};
+
+const badgeStyle = {
+  background: "#6366f1",
+  color: "#fff",
+  padding: "6px 12px",
+  borderRadius: "999px",
+  fontSize: "12px",
+  fontWeight: "500",
+  textTransform: "capitalize",
 };
 
 export default MyApplications;

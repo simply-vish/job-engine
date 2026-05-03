@@ -3,26 +3,50 @@ import { auth, db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
+import { collection, query, where, getDocs } from "firebase/firestore";
 
 function Dashboard() {
   const [userData, setUserData] = useState(null);
   const navigate = useNavigate();
+  const [stats, setStats] = useState({
+    applications: 0,
+    interviews: 0,
+    offers: 0,
+  });
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchData = async () => {
       const user = auth.currentUser;
 
-      if (user) {
-        const docRef = doc(db, "users", user.uid);
-        const docSnap = await getDoc(docRef);
+      if (!user) return;
 
-        if (docSnap.exists()) {
-          setUserData(docSnap.data());
-        }
+      // USER DATA
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (userSnap.exists()) {
+        setUserData(userSnap.data());
       }
+
+      // APPLICATIONS DATA
+      const appsRef = collection(db, "applications");
+      const q = query(appsRef, where("userId", "==", user.uid));
+      const snapshot = await getDocs(q);
+
+      let applications = snapshot.size;
+      let interviews = 0;
+      let offers = 0;
+
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data.status === "interview") interviews++;
+        if (data.status === "offer") offers++;
+      });
+
+      setStats({ applications, interviews, offers });
     };
 
-    fetchUser();
+    fetchData();
   }, []);
 
   return (
@@ -39,9 +63,13 @@ function Dashboard() {
 
       {/* STATS */}
       <div style={grid3}>
-        <StatCard title="Applications" value="12" onClick={() => navigate("/applications")} />
-        <StatCard title="Interviews" value="5" />
-        <StatCard title="Offers" value="3" />
+        <StatCard
+          title="Applications"
+          value={stats.applications}
+          onClick={() => navigate("/applications")}
+        />
+        <StatCard title="Interviews" value={stats.interviews} />
+        <StatCard title="Offers" value={stats.offers} />
       </div>
 
       {/* EXPLORE */}
