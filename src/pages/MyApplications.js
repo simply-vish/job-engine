@@ -4,82 +4,78 @@ import { auth, db } from "../firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
 
 function MyApplications() {
-  const [apps] = useState([]);
+  const [applications, setApplications] = useState([]);
   const [filter, setFilter] = useState("all");
-  const [setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchApplications = async () => {
-      const user = auth.currentUser;
-      if (!user) return;
+      try {
+        const user = auth.currentUser;
+        if (!user) {
+          setLoading(false);
+          return;
+        }
 
-      const q = query(
-        collection(db, "applications"),
-        where("userId", "==", user.uid),
-      );
+        const q = query(
+          collection(db, "applications"),
+          where("userId", "==", user.uid)
+        );
 
-      const snapshot = await getDocs(q);
+        const snapshot = await getDocs(q);
 
-      const apps = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
 
-      setApplications(apps);
-      setLoading(false);
+        setApplications(data);
+      } catch (error) {
+        console.error("Error fetching applications:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchApplications();
-  }, []);
+  }, []); // clean, no warning
 
+  // FILTER LOGIC
   const filteredApps =
-    filter === "all" ? apps : apps.filter((a) => a.status === filter);
+    filter === "all"
+      ? applications
+      : applications.filter((app) => app.status === filter);
 
   return (
     <Layout>
       {/* HEADER */}
       <div style={header}>
         <h1>My Applications</h1>
-        <p style={{ color: "#6b7280" }}>Track your job applications</p>
+        <p style={subText}>Track your job applications</p>
       </div>
 
       {/* FILTER */}
       <div style={filters}>
-        <FilterBtn
-          text="All"
-          active={filter === "all"}
-          onClick={() => setFilter("all")}
-        />
-        <FilterBtn
-          text="Applied"
-          active={filter === "applied"}
-          onClick={() => setFilter("applied")}
-        />
-        <FilterBtn
-          text="Interview"
-          active={filter === "interview"}
-          onClick={() => setFilter("interview")}
-        />
+        <FilterBtn text="All" active={filter === "all"} onClick={() => setFilter("all")} />
+        <FilterBtn text="Applied" active={filter === "applied"} onClick={() => setFilter("applied")} />
+        <FilterBtn text="Interview" active={filter === "interview"} onClick={() => setFilter("interview")} />
       </div>
 
-      {/* GRID */}
+      {/* CONTENT */}
       <div style={grid}>
         {loading ? (
           <p>Loading...</p>
         ) : filteredApps.length === 0 ? (
-          <p style={{ color: "#6b7280", marginTop: "20px" }}>
-            No applications found 🚀
-          </p>
+          <p style={emptyText}>No applications yet 🚀</p>
         ) : (
           filteredApps.map((app) => (
             <div key={app.id} style={cardStyle}>
               <div>
-                <h3>{app.jobTitle}</h3>
-                <p>{app.company}</p>
+                <h3 style={{ margin: 0 }}>{app.jobTitle || "Job Title"}</h3>
+                <p style={subText}>{app.company || "Company"}</p>
               </div>
 
-              <span style={badgeStyle}>{app.status}</span>
+              <span style={badgeStyle}>{app.status || "applied"}</span>
             </div>
           ))
         )}
@@ -88,8 +84,7 @@ function MyApplications() {
   );
 }
 
-/* COMPONENTS */
-
+/* FILTER BUTTON */
 function FilterBtn({ text, active, onClick }) {
   return (
     <button
@@ -100,7 +95,8 @@ function FilterBtn({ text, active, onClick }) {
         border: "none",
         cursor: "pointer",
         background: active ? "#6366f1" : "#e5e7eb",
-        color: active ? "white" : "black",
+        color: active ? "white" : "#111",
+        fontWeight: "500",
       }}
     >
       {text}
@@ -108,65 +104,35 @@ function FilterBtn({ text, active, onClick }) {
   );
 }
 
-// function Status({ status }) {
-//   const colors = {
-//     applied: "#3b82f6",
-//     interview: "#f59e0b",
-//     offer: "#10b981",
-//     rejected: "#ef4444",
-//   };
-
-//   return (
-//     <span
-//       style={{
-//         background: colors[status] || "#ccc",
-//         color: "white",
-//         padding: "4px 10px",
-//         borderRadius: "20px",
-//         fontSize: "12px",
-//       }}
-//     >
-//       {status}
-//     </span>
-//   );
-// }
-
 /* STYLES */
 
 const header = {
   marginBottom: "20px",
 };
 
+const subText = {
+  color: "#6b7280",
+  fontSize: "14px",
+};
+
 const filters = {
   display: "flex",
   gap: "10px",
   marginBottom: "20px",
+  flexWrap: "wrap",
 };
 
 const grid = {
   display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-  gap: "15px",
+  gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+  gap: "16px",
 };
-
-// const card = {
-//   background: "#fff",
-//   padding: "16px",
-//   borderRadius: "10px",
-//   border: "1px solid #eee",
-//   boxShadow: "0 4px 10px rgba(0,0,0,0.04)",
-// };
-
-// const muted = {
-//   color: "#6b7280",
-// };
 
 const cardStyle = {
   background: "#fff",
   padding: "16px",
   borderRadius: "12px",
   boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
-  marginBottom: "12px",
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
@@ -180,6 +146,11 @@ const badgeStyle = {
   fontSize: "12px",
   fontWeight: "500",
   textTransform: "capitalize",
+};
+
+const emptyText = {
+  color: "#6b7280",
+  marginTop: "20px",
 };
 
 export default MyApplications;
